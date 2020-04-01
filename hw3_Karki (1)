@@ -1,0 +1,240 @@
+#Bimal Bikram Karki
+
+
+
+
+.data
+     aray1: .space 12
+	 aray2: .space 12
+	 message1: .asciiz "\nEnter 1 to play and 0 to quit: " 
+	 userinput: .space 20
+	 message3: .asciiz "strike out\n " 
+     message4: .asciiz "\n " 
+	 message5: .asciiz "\nPlease Enter 3 numbers"
+	 message6: .asciiz "\nno. of strike is "
+	 message7: .asciiz "\tno. of ball is "
+	 message8: .asciiz "\nNo. of attempt is "
+	 
+	 
+	 
+.text       
+    main:
+	    #values for the first array
+	    addi $s1, $zero, 1
+	    addi $s2, $zero, 2
+	    addi $s3, $zero, 3
+	  
+	    #Index of the array be $t0   
+	    addi $t0,$zero,0
+	    sw $s1,aray1($t0)
+	  	  addi $t1,$zero,4
+	    sw $s2,aray1($t1)
+	  	  addi $t2,$zero,8
+	    sw $s3,aray1($t2)
+		
+		#printing message1
+		li $v0,4
+		la $a0, message1
+		syscall
+		
+		#taking user input asking whether to play or not
+	    li $v0,5
+		la $a0,userinput
+		li $a1,2
+		syscall
+		move $t0,$v0
+		
+		addi $s7,$zero,0
+		addi $t1,$zero,1
+		# calling the function play if user choose to play
+		bne $t0, $t1, Else
+		jal  play #calling the function play
+		Else: j Exit
+		
+		
+		play:
+		  #print message5
+		  li $v0,4
+		  la $a0, message5
+		  syscall
+		  
+		  #print message4
+		  li $v0,4
+		  la $a0, message4
+		  syscall
+		  
+          #Filling up the array with the user input
+		  li $v0, 5
+	      syscall
+		  add $t3,$v0,$zero
+	       
+          addi $t0,$zero,0
+	      sw $t3,aray2($t0)#adding value for array2[0]
+		  
+          li $v0, 5
+	      syscall
+	      add $t4, $v0, $zero 
+          addi $t0,$zero,4
+	      sw $t4,aray2($t0)#adding value for array2[1]
+		  
+          li $v0, 5
+	      syscall
+	      add $t5, $v0, $zero 	
+          addi $t0,$zero,8
+	      sw $t5,aray2($t0)	#adding value for array2[2]	
+		  jal strike
+		  jr $ra
+		  
+		 
+          #compare each value of array and print "strike out" if all values are true and link to compare function if not
+		strike:#getting values from array
+		    
+		    addi $t0,$zero,0
+			  lw $s1, aray1($t0)
+			  addi $t0,$zero,4
+			  lw $s2, aray1($t0)
+			  addi $t0,$zero,8
+			  lw $s3, aray1($t0)
+			  addi $t1,$zero,0
+			  lw $s4, aray2($t1)
+			  addi $t1,$zero,4
+			  lw $s5, aray2($t1)
+			  addi $t1,$zero,8
+			  lw $s6, aray2($t1)
+			  
+			#checking for strike
+		     bne $s1,$s4,Else3
+			  bne $s2,$s5, Else3
+			   bne $s3,$s6, Else3 
+			   li $v0,4
+			   la $a0,message3# print strike out if all the conditions meets
+			   syscall
+			   #addi $v0,$zero,1 
+			   
+			   addi $s7,$s7,1
+			   
+			   #print message 8			
+			 li $v0,4
+			 la $a0,message8
+			 syscall 
+            
+            #print the number of attempts 
+			 li $v0,1
+			 move $a0, $s7
+			 syscall	
+			 
+			   jr $ra
+			   j Exit #Jump to exit if strike out occurs
+			 Else3: jal compare
+			 
+		   compare:
+		    
+			  #retriving values from aray1 and aray2
+              addi $t0,$zero,0
+			  lw $s1, aray1($t0)
+			  addi $t0,$zero,4
+			  lw $s2, aray1($t0)
+			  addi $t0,$zero,8
+			  lw $s3, aray1($t0)
+			  addi $t1,$zero,0
+			  lw $s4, aray2($t1)
+			  addi $t1,$zero,4
+			  lw $s5, aray2($t1)
+			  addi $t1,$zero,8
+			  lw $s6, aray2($t1)
+			  
+			  #setting the counter
+			  addi $t2,$zero,0 #counter for strikes
+			  addi $t3,$zero,0 #counter for balls
+			  
+			  #comparing values using if else
+			  bne $s1, $s4 If1
+			  addi $t2,$t2,1
+			 If1: addi $t2,$t2,0
+			 
+			  bne $s2, $s5 If2
+			  addi $t2,$t2,1
+			 If2: addi $t2,$t2,0
+			 
+			  bne $s3, $s6,If3
+			   addi $t2,$t2,1
+			 If3:addi $t2,$t2,0
+			  
+			 
+			 
+			 #print message 6
+			 li $v0,4
+			 la $a0,message6
+			 syscall
+			 
+			 #print the number of strikes
+			 li $v0,1
+			 move $a0, $t2
+			 syscall
+			 
+			#using if else to count the number of balls
+			   bne $s1,$s5, A1
+			   addi $t3,$t3,1
+	         A1: addi $t3,$t3,0
+			   bne $s1,$s6, A2
+			   addi $t3,$t3,1
+			   
+		     A2: addi $t3,$t3,0
+			   bne $s2,$s4, A3
+			   addi $t3,$t3,1
+		     A3: addi $t3,$t3,0
+			   
+			   bne $s2,$s6, A5
+			   addi $t3,$t3,1
+			 A5: addi $t3,$t3,0
+			 
+			   bne $s3,$s4, A6
+			   addi $t3,$t3,1
+		     A6: addi $t3,$t3,0
+			 
+			   bne $s3,$s5, A7
+			   addi $t3,$t3,1
+		     A7: addi $t3,$t3,0
+			   
+			#print message 6   
+			   li $v0,4
+			 la $a0,message7
+			 syscall
+			 
+			#print the number of balls  
+			 li $v0,1
+			 move $a0, $t3
+			 syscall
+			
+            #print message 4			
+			  li $v0,4
+			 la $a0,message4
+			 syscall
+			
+            #setting the counters back to zero			
+			 addi $t2,$zero,0
+			 addi $t3,$zero,0
+			 
+			 addi $s7,$s7,1
+			 
+			#jump to play for next round 
+			   jal play
+			   
+			#print message 8			
+			  li $v0,4
+			 la $a0,message8
+			 syscall 
+            
+            #print the number of attempts 
+			 li $v0,1
+			 move $a0, $s7
+			 syscall			
+        
+        #exiting the program		
+		Exit:	 
+		jr $ra	 
+		li $v0, 10
+		syscall
+		
+		
+	    
